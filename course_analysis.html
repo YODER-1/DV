@@ -171,9 +171,6 @@
             fill: none;
             stroke: #f44336;
             stroke-width: 2;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: drawLine 2s ease-out forwards;
         }
 
         .dot {
@@ -270,15 +267,6 @@
             fill: none;
             stroke: #f44336;
             stroke-width: 2;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: drawLine 2s ease-out forwards;
-        }
-
-        @keyframes drawLine {
-            to {
-                stroke-dashoffset: 0;
-            }
         }
 
         /* 散点图动画 */
@@ -1140,9 +1128,6 @@
                 .style("font-size", "12px")
                 .text("平均完成度趋势");
 
-
-
-
             // 添加柱状图
             const bars = g.selectAll(".bar")
                 .data(combinedData)
@@ -1158,11 +1143,21 @@
                 .x(d => x(d.course) + x.bandwidth() / 2)
                 .y(d => y2(d.completion));
 
-            g.append("path")
+            const linePath = g.append("path")
                 .datum(combinedData)
                 .attr("class", "line")
                 .attr("stroke", "#f44336")
                 .attr("d", line);
+
+            // 动态获取路径长度并设置动画
+            const pathLength = linePath.node().getTotalLength();
+            linePath
+                .attr("stroke-dasharray", pathLength)
+                .attr("stroke-dashoffset", pathLength)
+                .transition()
+                .duration(2000)
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0);
 
             // 获取完成度的颜色
             function getCompletionColor(completion) {
