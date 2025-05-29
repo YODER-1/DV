@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动画效果测试</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        @keyframes slideInUp {
+            from { 
+                transform: translateY(20px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0); 
+                opacity: 1; 
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .bar {
+            fill: #0288d1;
+            transition: fill 0.3s;
+        }
+        
+        .bar:hover {
+            fill: #026aa7;
+        }
+        
+        .line {
+            fill: none;
+            stroke: #f44336;
+            stroke-width: 2;
+        }
+        
+        button {
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        
+        button:hover {
+            background-color: #026aa7;
+        }
+    </style>
+</head>
+<body>
+    <h1>图表动画效果测试</h1>
+    
+    <div class="test-container">
+        <div class="test-title">柱状图动画测试</div>
+        <button onclick="animateBarChart()">重新播放柱状图动画</button>
+        <svg id="bar-test" width="600" height="300"></svg>
+    </div>
+    
+    <div class="test-container">
+        <div class="test-title">折线图动画测试</div>
+        <button onclick="animateLineChart()">重新播放折线图动画</button>
+        <svg id="line-test" width="600" height="300"></svg>
+    </div>
+    
+    <div class="test-container">
+        <div class="test-title">直方图动画测试</div>
+        <button onclick="animateHistogram()">重新播放直方图动画</button>
+        <svg id="histogram-test" width="600" height="300"></svg>
+    </div>
+
+    <script>
+        // 测试数据
+        const barData = [
+            {name: "课程A", value: 120},
+            {name: "课程B", value: 98},
+            {name: "课程C", value: 86},
+            {name: "课程D", value: 75},
+            {name: "课程E", value: 65}
+        ];
+        
+        const lineData = [
+            {date: "2018-01", value: 45},
+            {date: "2018-02", value: 52},
+            {date: "2018-03", value: 48},
+            {date: "2018-04", value: 61},
+            {date: "2018-05", value: 58},
+            {date: "2018-06", value: 67},
+            {date: "2018-07", value: 72},
+            {date: "2018-08", value: 69},
+            {date: "2018-09", value: 75},
+            {date: "2018-10", value: 78},
+            {date: "2018-11", value: 82},
+            {date: "2018-12", value: 85}
+        ];
+        
+        const histogramData = [
+            {range: "0-20%", count: 15},
+            {range: "20-40%", count: 25},
+            {range: "40-60%", count: 35},
+            {range: "60-80%", count: 45},
+            {range: "80-100%", count: 55}
+        ];
+
+        // 柱状图动画
+        function animateBarChart() {
+            const svg = d3.select("#bar-test");
+            const margin = {top: 20, right: 20, bottom: 40, left: 40};
+            const width = 600 - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const x = d3.scaleBand()
+                .domain(barData.map(d => d.name))
+                .range([0, width])
+                .padding(0.2);
+            
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(barData, d => d.value)])
+                .range([height, 0]);
+            
+            // 坐标轴
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+            
+            g.append("g")
+                .call(d3.axisLeft(y));
+            
+            // 柱状图
+            const bars = g.selectAll(".bar")
+                .data(barData)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.name))
+                .attr("y", height)
+                .attr("width", x.bandwidth())
+                .attr("height", 0);
+            
+            // 动画
+            bars.transition()
+                .duration(800)
+                .delay((d, i) => i * 100)
+                .ease(d3.easeBackOut.overshoot(1.2))
+                .attr("y", d => y(d.value))
+                .attr("height", d => height - y(d.value));
+        }
+
+        // 折线图动画
+        function animateLineChart() {
+            const svg = d3.select("#line-test");
+            const margin = {top: 20, right: 20, bottom: 40, left: 40};
+            const width = 600 - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const x = d3.scalePoint()
+                .domain(lineData.map(d => d.date))
+                .range([0, width]);
+            
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(lineData, d => d.value)])
+                .range([height, 0]);
+            
+            // 坐标轴
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+            
+            g.append("g")
+                .call(d3.axisLeft(y));
+            
+            // 折线
+            const line = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.value))
+                .curve(d3.curveCatmullRom);
+            
+            const path = g.append("path")
+                .datum(lineData)
+                .attr("class", "line")
+                .attr("d", line);
+            
+            // 动画
+            const totalLength = path.node().getTotalLength();
+            path
+                .attr("stroke-dasharray", totalLength + " " + totalLength)
+                .attr("stroke-dashoffset", totalLength)
+                .transition()
+                .duration(2000)
+                .ease(d3.easeLinear)
+                .attr("stroke-dashoffset", 0);
+        }
+
+        // 直方图动画
+        function animateHistogram() {
+            const svg = d3.select("#histogram-test");
+            const margin = {top: 20, right: 20, bottom: 40, left: 40};
+            const width = 600 - margin.left - margin.right;
+            const height = 300 - margin.top - margin.bottom;
+            
+            svg.selectAll("*").remove();
+            
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            
+            const x = d3.scaleBand()
+                .domain(histogramData.map(d => d.range))
+                .range([0, width])
+                .padding(0.1);
+            
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(histogramData, d => d.count)])
+                .range([height, 0]);
+            
+            // 坐标轴
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x));
+            
+            g.append("g")
+                .call(d3.axisLeft(y));
+            
+            // 直方图
+            const bars = g.selectAll(".bar")
+                .data(histogramData)
+                .enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.range))
+                .attr("y", height)
+                .attr("width", x.bandwidth())
+                .attr("height", 0);
+            
+            // 动画
+            bars.transition()
+                .duration(800)
+                .delay((d, i) => i * 100)
+                .ease(d3.easeBackOut.overshoot(1.2))
+                .attr("y", d => y(d.count))
+                .attr("height", d => height - y(d.count));
+        }
+
+        // 初始化所有图表
+        animateBarChart();
+        animateLineChart();
+        animateHistogram();
+    </script>
+</body>
+</html> 

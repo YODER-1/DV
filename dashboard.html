@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研人员在线学习数据 - 数据总览</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e3f2fd;
+        }
+        
+        .navbar {
+            background-color: #0288d1;
+            padding: 20px 40px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+        
+        .navbar > div:first-child {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .navbar a:hover {
+            text-decoration: none;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .kpi-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.2s;
+            animation: slideInUp 0.6s ease-out;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .kpi-icon {
+            font-size: 24px;
+            color: #0288d1;
+            margin-bottom: 10px;
+        }
+        
+        .kpi-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0288d1;
+            margin: 10px 0;
+            animation: countUp 0.8s ease-out;
+        }
+        
+        .kpi-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .kpi-card1 {
+            background: #e3f2fd;
+
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            animation: slideInUp 0.8s ease-out;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+            margin: 10px auto;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        /* 添加动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { 
+                transform: translateY(20px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes slideInLeft {
+            from { 
+                transform: translateX(-20px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(0); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes growHeight {
+            from { 
+                transform: scaleY(0);
+                transform-origin: bottom;
+            }
+            to { 
+                transform: scaleY(1);
+                transform-origin: bottom;
+            }
+        }
+
+        @keyframes countUp {
+            from { 
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 柱状图动画 */
+        .bar {
+            fill: #0288d1;
+            transition: fill 0.3s;
+        }
+
+        .bar:hover {
+            fill: #026aa7;
+        }
+
+        /* 坐标轴动画 */
+        .axis {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        /* 延迟动画效果 */
+        .kpi-card:nth-child(1) { animation-delay: 0s; }
+        .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+        .kpi-card:nth-child(3) { animation-delay: 0.2s; }
+        .kpi-card:nth-child(4) { animation-delay: 0.3s; }
+        .kpi-card:nth-child(5) { animation-delay: 0.4s; }
+        .kpi-card:nth-child(6) { animation-delay: 0.5s; }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <div>科研人员在线学习数据分析</div>
+        <div>
+            <a href="dashboard.html">数据总览</a>
+            <a href="demographic_analysis.html">人口统计分析</a>
+            <a href="course_analysis.html">课程分析</a>
+            <a href="time_behavior_analysis.html">时间行为分析</a>
+            <a href="quality_efficiency_analysis.html">质量与效率分析</a>
+            <a href="clustering_analysis.html">聚类分析</a>
+            <a href="index.html">返回首页</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="kpi-value" id="total-course">-</div>
+                <div class="kpi-label">总设置课程数量</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="kpi-value" id="total-courses">-</div>
+                <div class="kpi-label">总选课数量</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="kpi-value" id="total-duration">-</div>
+                <div class="kpi-label">总学习时长（小时）</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="kpi-value" id="conversion-rate-value">-</div>
+                <div class="kpi-label">学习转化率</div>
+            </div>
+            <div class="kpi-card1">
+
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-book-reader"></i>
+                </div>
+                <div class="kpi-value" id="avg-courses">-</div>
+                <div class="kpi-label">人均选课数量</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="kpi-value" id="avg-duration">-</div>
+                <div class="kpi-label">人均学习时长（小时）</div>
+            </div>
+        </div>
+        <div class="kpi-card1">
+
+        </div>
+        <div class="chart-container">
+            <div class="chart-title">科研人员群体规模比较</div>
+            <svg id="bar-chart" width="100%" height="400"></svg>
+        </div>
+
+
+    </div>
+
+    <script>
+        // 标准颜色方案：蓝橙红绿
+        const standardColors = {
+            primary: ["#0288d1", "#ff9800", "#f44336", "#4caf50"],
+            line: "#ff9800", // 趋势线、拟合线、平均线统一使用橙色
+            background: "#e6e6e6"
+        };
+
+        // 创建tooltip
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+        // 加载数据并创建图表
+        d3.json("data/overall_participation.json").then(data => {
+            // 更新KPI卡片
+            document.getElementById("total-course").textContent = data.total_course.toLocaleString();
+            document.getElementById("conversion-rate-value").textContent = (data.learning_conversion_rate * 100).toFixed(1) + "%";
+            document.getElementById("total-courses").textContent = data.total_selected_courses_count.toLocaleString();
+            document.getElementById("total-duration").textContent = Math.round(data.total_learning_duration_hours).toLocaleString();
+            document.getElementById("avg-courses").textContent = data.avg_courses_per_total_learner.toFixed(1);
+            document.getElementById("avg-duration").textContent = data.avg_learning_duration_per_actual_learner.toFixed(1);
+
+            // 创建比较柱状图
+            createBarChart(data);
+        });
+
+        // 创建环形进度条
+        function createProgressRing(rate) {
+            const svg = d3.select("#conversion-rate");
+            const width = 60;
+            const height = 60;
+            const radius = Math.min(width, height) / 2;
+            const thickness = 8;
+
+            svg.attr("width", width)
+               .attr("height", height);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${width/2},${height/2})`);
+
+            // 背景圆环
+            g.append("path")
+                .attr("d", d3.arc()
+                    .innerRadius(radius - thickness)
+                    .outerRadius(radius)
+                    .startAngle(0)
+                    .endAngle(2 * Math.PI))
+                .attr("fill", "#e6e6e6");
+
+            // 进度圆环
+            g.append("path")
+                .attr("d", d3.arc()
+                    .innerRadius(radius - thickness)
+                    .outerRadius(radius)
+                    .startAngle(0)
+                    .endAngle(2 * Math.PI * rate))
+                .attr("fill", standardColors.primary[0]);
+        }
+
+        // 创建比较柱状图
+        function createBarChart(data) {
+            const svg = d3.select("#bar-chart");
+            const margin = {top: 20, right: 30, bottom: 40, left: 60};
+            const width = svg.node().getBoundingClientRect().width;
+            const height = 400;
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+
+            const chartData = [
+                {label: "总选课人数", value: data.total_selected_users},
+                {label: "实际学习人数", value: data.actual_learning_users},
+                {label: "选课未学习人数", value: data.selected_not_learned_users}
+            ];
+
+            const x = d3.scaleBand()
+                .domain(chartData.map(d => d.label))
+                .range([0, innerWidth])
+                .padding(0.3);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(chartData, d => d.value)])
+                .range([innerHeight, 0]);
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // 添加坐标轴
+            g.append("g")
+                .attr("transform", `translate(0,${innerHeight})`)
+                .call(d3.axisBottom(x));
+
+            g.append("g")
+                .call(d3.axisLeft(y));
+
+            // 添加坐标轴标签
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("x", innerWidth / 2)
+                .attr("y", innerHeight + 35)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#666")
+                .text("科研人员群体类别");
+
+            g.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("x", -innerHeight / 2)
+                .attr("y", -40)
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("fill", "#666")
+                .text("科研人员数量");
+
+            // 添加柱状图
+            const bars = g.selectAll("rect")
+                .data(chartData)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.label))
+                .attr("y", innerHeight) // 初始位置在底部
+                .attr("width", x.bandwidth())
+                .attr("height", 0) // 初始高度为0
+                .attr("fill", (d, i) => standardColors.primary[i % standardColors.primary.length]);
+
+            // 添加动画效果
+            bars.transition()
+                .duration(800)
+                .delay((d, i) => i * 200) // 每个柱子延迟200ms
+                .ease(d3.easeBackOut.overshoot(1.2))
+                .attr("y", d => y(d.value))
+                .attr("height", d => innerHeight - y(d.value));
+
+            // 添加交互效果
+            bars.on("mouseover", function(event, d) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("fill", "#026aa7");
+                    
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                    
+                    tooltip.html(`${d.label}: ${d.value.toLocaleString()}`)
+                        .style("left", (event.pageX + 5) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("fill", "#0288d1");
+                    
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+        }
+    </script>
+</body>
+
+</html> 
